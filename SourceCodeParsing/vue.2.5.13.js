@@ -10,11 +10,12 @@
 }(this, (function () { 'use strict';
 
 /*  */
-
+//Object.freeze() 方法返回一个无法进行任何修改操作的空对象		      
 var emptyObject = Object.freeze({});
 
 // these helpers produces better vm code in JS engines due to their
 // explicitness and function inlining
+//包装函数
 function isUndef (v) {
   return v === undefined || v === null
 }
@@ -32,7 +33,7 @@ function isFalse (v) {
 }
 
 /**
- * Check if value is primitive
+ * Check if value is primitive 检查是否为原始数据类型
  */
 function isPrimitive (value) {
   return (
@@ -47,14 +48,14 @@ function isPrimitive (value) {
 /**
  * Quick object check - this is primarily used to tell
  * Objects from primitive values when we know the value
- * is a JSON-compliant type.
+ * is a JSON-compliant type. 对象检测
  */
 function isObject (obj) {
   return obj !== null && typeof obj === 'object'
 }
 
 /**
- * Get the raw type string of a value e.g. [object Object]
+ * Get the raw type string of a value e.g. [object Object] 获取原始类型的字符串
  */
 var _toString = Object.prototype.toString;
 
@@ -64,7 +65,7 @@ function toRawType (value) {
 
 /**
  * Strict object type check. Only returns true
- * for plain JavaScript objects.
+ * for plain JavaScript objects. 严格对象类型检测，
  */
 function isPlainObject (obj) {
   return _toString.call(obj) === '[object Object]'
@@ -75,7 +76,9 @@ function isRegExp (v) {
 }
 
 /**
- * Check if val is a valid array index.
+ * Check if val is a valid array index. 检测是否是有效的数组索引 
+ * isFinite，检查其参数是否是无穷大。如果 number 是有限数字（或可转换为有限数字），那么返回 true。
+ * 否则，如果 number 是 NaN（非数字），或者是正、负无穷大的数，则返回 false。
  */
 function isValidArrayIndex (val) {
   var n = parseFloat(String(val));
@@ -83,7 +86,9 @@ function isValidArrayIndex (val) {
 }
 
 /**
- * Convert a value to a string that is actually rendered.
+ * Convert a value to a string that is actually rendered. 转换为字符串
+ * JSON.stringify(value[, replacer[, space]]  2 文本在每个级别缩进指定数目的空格 为 2
+ * String() 函数把对象的值转换为字符串
  */
 function toString (val) {
   return val == null
@@ -94,7 +99,7 @@ function toString (val) {
 }
 
 /**
- * Convert a input value to a number for persistence.
+ * Convert a input value to a number for persistence. 转换为number
  * If the conversion fails, return original string.
  */
 function toNumber (val) {
@@ -103,7 +108,7 @@ function toNumber (val) {
 }
 
 /**
- * Make a map and return a function for checking if a key
+ * Make a map and return a function for checking if a key 生成一个map集合 返回一个函数，检测key是否在map集合中
  * is in that map.
  */
 function makeMap (
@@ -121,17 +126,17 @@ function makeMap (
 }
 
 /**
- * Check if a tag is a built-in tag.
+ * Check if a tag is a built-in tag. 检测是否为内置的标记
  */
 var isBuiltInTag = makeMap('slot,component', true);
 
 /**
- * Check if a attribute is a reserved attribute.
+ * Check if a attribute is a reserved attribute. 检测属性是否为保留属性
  */
 var isReservedAttribute = makeMap('key,ref,slot,slot-scope,is');
 
 /**
- * Remove an item from an array
+ * Remove an item from an array 从数组中移除某一项
  */
 function remove (arr, item) {
   if (arr.length) {
@@ -144,6 +149,7 @@ function remove (arr, item) {
 
 /**
  * Check whether the object has the property.
+ * Object.prototype.hasOwnProperty 判断一个属性是定义在对象本身而不是继承自原型链
  */
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 function hasOwn (obj, key) {
@@ -151,63 +157,64 @@ function hasOwn (obj, key) {
 }
 
 /**
- * Create a cached version of a pure function.
+ * Create a cached version of a pure function. 创建一个纯粹的函数的缓存版本
  */
 function cached (fn) {
-  var cache = Object.create(null);
-  return (function cachedFn (str) {
-    var hit = cache[str];
-    return hit || (cache[str] = fn(str))
+  var cache = Object.create(null);//创建一个缓存对象
+  return (function cachedFn (str) {//返回一个函数
+    var hit = cache[str];//以函数的参数为键
+    return hit || (cache[str] = fn(str))//如果缓存对象中存在这个键，那么就从缓存中返回这个函数，如果没有就把这个函数赋值到缓存对象中并且返回
   })
 }
 
 /**
- * Camelize a hyphen-delimited string.
+ * Camelize a hyphen-delimited string. 驼峰化一个连字符连接的字符串
  */
 var camelizeRE = /-(\w)/g;
 var camelize = cached(function (str) {
+ //把第一个字符串的首个字符大写，把除第一个字符的字符串返回与大写的首字符拼接
   return str.replace(camelizeRE, function (_, c) { return c ? c.toUpperCase() : ''; })
 });
 
 /**
- * Capitalize a string.
+ * Capitalize a string.//对一个字符串首字母大写
  */
 var capitalize = cached(function (str) {
   return str.charAt(0).toUpperCase() + str.slice(1)
 });
 
 /**
- * Hyphenate a camelCase string.
+ * Hyphenate a camelCase string. 用字符号连接一个驼峰的字符串
  */
 var hyphenateRE = /\B([A-Z])/g;
-var hyphenate = cached(function (str) {
-  return str.replace(hyphenateRE, '-$1').toLowerCase()
+var hyphenate = cached(function (str) { //$1为正则表达式匹配的第一个元素$2为第二个元素
+  return str.replace(hyphenateRE, '-$1').toLowerCase() //使之最小化
 });
 
 /**
- * Simple bind, faster than native
+ * Simple bind, faster than native //简单的绑定，会比原生的更快
  */
 function bind (fn, ctx) {
   function boundFn (a) {
-    var l = arguments.length;
+    var l = arguments.length;//获取实参的数量
     return l
-      ? l > 1
+      ? l > 1//如果实参数量大于1
         ? fn.apply(ctx, arguments)
-        : fn.call(ctx, a)
-      : fn.call(ctx)
+        : fn.call(ctx, a)//实参数量等于1
+      : fn.call(ctx)//没有参数
   }
-  // record original fn length
+  // record original fn length//记录一下原始的形参数量
   boundFn._length = fn.length;
   return boundFn
 }
 
 /**
- * Convert an Array-like object to a real Array.
+ * Convert an Array-like object to a real Array.//转换一个类数组的对象为真正的数组
  */
 function toArray (list, start) {
-  start = start || 0;
-  var i = list.length - start;
-  var ret = new Array(i);
+  start = start || 0;//如果start存在则用start如果不存在则用0；
+  var i = list.length - start;//设置新数组的数量
+  var ret = new Array(i);//新建数组
   while (i--) {
     ret[i] = list[i + start];
   }
@@ -215,7 +222,7 @@ function toArray (list, start) {
 }
 
 /**
- * Mix properties into target object.
+ * Mix properties into target object. 将属性混合到目标对象中
  */
 function extend (to, _from) {
   for (var key in _from) {
@@ -225,7 +232,7 @@ function extend (to, _from) {
 }
 
 /**
- * Merge an Array of Objects into a single Object.
+ * Merge an Array of Objects into a single Object. 将对象数组合并为单个对象。
  */
 function toObject (arr) {
   var res = {};
@@ -238,24 +245,25 @@ function toObject (arr) {
 }
 
 /**
- * Perform no operation.
+ * Perform no operation. 无操作
  * Stubbing args to make Flow happy without leaving useless transpiled code
  * with ...rest (https://flow.org/blog/2017/05/07/Strict-Function-Call-Arity/)
  */
 function noop (a, b, c) {}
 
 /**
- * Always return false.
+ * Always return false.//总是返回false
  */
 var no = function (a, b, c) { return false; };
 
 /**
- * Return same value
+ * Return same value//返回相同的值
  */
 var identity = function (_) { return _; };
 
 /**
- * Generate a static keys string from compiler modules.
+ * Generate a static keys string from compiler modules.//从编译器生成一个静态键字符串模块。
+ * reduce() 方法接收一个函数作为累加器，数组中的每个值（从左到右）开始缩减，最终计算为一个值。
  */
 function genStaticKeys (modules) {
   return modules.reduce(function (keys, m) {
